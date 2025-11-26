@@ -23,7 +23,10 @@
             
             <div class="mb-3">
                 <label>Password</label>
-                <input type="password" name="password" class="form-control" required placeholder="Minimal 6 karakter">
+                <input type="password" name="password" class="form-control" required minlength="6" placeholder="Minimal 6 karakter">
+                <div class="form-text text-muted" style="font-size: 12px;">
+                    *Minimal 6 karakter kombinasi huruf dan angka.
+                </div>
             </div>
             
             <button type="submit" class="btn btn-success w-100 py-2">Daftar Sekarang</button>

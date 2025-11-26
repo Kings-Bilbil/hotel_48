@@ -82,19 +82,37 @@ class AuthController
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
 
-        // Validasi sederhana
+        // 1. Validasi Kolom Kosong
         if (empty($name) || empty($email) || empty($password)) {
             echo "<script>alert('Semua kolom wajib diisi!'); window.history.back();</script>";
             exit;
         }
 
-        // Cek Email Kembar
+        // 2. Validasi Format Email (Harus ada @ dan domain)
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            echo "<script>
+                    alert('Format Email tidak valid! Harap gunakan email yang benar (contoh: nama@email.com).'); 
+                    window.history.back();
+                  </script>";
+            exit;
+        }
+
+        // 3. Validasi Panjang Password (Minimal 6 Karakter)
+        if (strlen($password) < 6) {
+            echo "<script>
+                    alert('Password terlalu pendek! Minimal harus 6 karakter.'); 
+                    window.history.back();
+                  </script>";
+            exit;
+        }
+
+        // 4. Cek Email Kembar di Database
         if ($this->user->isEmailExists($email)) {
             echo "<script>alert('Email sudah terdaftar! Silakan login.'); window.location.href='index.php?action=login';</script>";
             exit;
         }
 
-        // Simpan ke Database
+        // 5. Simpan ke Database
         if ($this->user->register($name, $email, $password)) {
             echo "<script>
                     alert('Registrasi Berhasil! Silakan Login.');
@@ -104,4 +122,6 @@ class AuthController
             echo "<script>alert('Gagal mendaftar. Coba lagi.'); window.history.back();</script>";
         }
     }
+
+    
 }

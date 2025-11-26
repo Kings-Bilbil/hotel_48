@@ -20,19 +20,22 @@ class DashboardController
 
     public function index()
     {
-        // 3. Pisahkan tampilan berdasarkan Role
         $role = $_SESSION['user_role'];
         $userName = $_SESSION['user_name'];
 
-        // Kirim data nama ke view
-        // Kita simpan di variabel $data biar rapi saat dipanggil di view
         $data = [
             'title' => 'Dashboard ' . ucfirst($role),
             'user' => $userName,
             'role' => $role
         ];
 
-        // Panggil view dashboard utama
+        // --- TAMBAHKAN KODE JEBAKAN INI ---
+        echo "<h1>TESTING: Masuk Controller Berhasil!</h1>";
+        echo "Role: " . $role . "<br>";
+        echo "Mencoba memanggil View...<br>";
+        // ----------------------------------
+
+        // Cek baris ini baik-baik huruf besar kecilnya
         require_once __DIR__ . '/../Views/dashboard/index.php';
     }
 }

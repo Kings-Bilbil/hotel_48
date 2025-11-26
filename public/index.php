@@ -180,7 +180,7 @@ switch ($action) {
         
         // 2. Biarkan Server Vercel yang meng-hash password '123'
         // Ini MENJAMIN hash-nya pasti cocok dengan sistem server
-        $pass = password_hash('123', PASSWORD_BCRYPT);
+        $pass = password_hash('adminrahasia', PASSWORD_BCRYPT);
         
         // 3. Masukkan data baru
         $stmt = $db->prepare("INSERT INTO users (name, email, password, role) VALUES ('Super Admin', 'admin@hotel48.com', :p, 'admin')");

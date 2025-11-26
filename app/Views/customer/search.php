@@ -22,7 +22,9 @@
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary w-100 mt-3">Cari Ketersediaan</button>
-                <a href="index.php?action=dashboard" class="btn btn-link mt-2">Kembali</a>
+    
+                <a href="index.php?action=home" class="btn btn-link mt-2">Kembali</a>
+
             </form>
         </div>
     </div>

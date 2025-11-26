@@ -15,22 +15,23 @@ use App\Controllers\DashboardController;
 use App\Controllers\RoomController;
 use App\Controllers\UnitController;
 use App\Controllers\BookingController;
-use App\Controllers\GoogleAuthController; // <-- Tambahan
+use App\Controllers\GoogleAuthController;
+use App\Controllers\HomeController; 
 
 $action = $_GET['action'] ?? 'home';
 
 switch ($action) {
     case 'home':
-        if (session_status() == PHP_SESSION_NONE) session_start();
-        if (isset($_SESSION['user_id'])) {
-            header("Location: index.php?action=dashboard");
-            exit;
-        }
-        $auth = new AuthController();
-        $auth->index(); 
+        $home = new HomeController();
+        $home->index(); 
+        break; 
         break;
 
     case 'login':
+        $auth = new AuthController();
+        $auth->index(); 
+        break;
+    case 'login_process':
         $auth = new AuthController();
         $auth->loginProcess();
         break;

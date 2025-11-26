@@ -15,7 +15,8 @@
     <div class="card">
         <h2 style="text-align:center">Login Hotel 48</h2>
         
-        <form action="index.php?action=login" method="POST">
+        <form action="index.php?action=login_process" method="POST">
+    
             <label>Email</label>
             <input type="email" name="email" required placeholder="email@contoh.com">
             

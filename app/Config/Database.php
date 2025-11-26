@@ -42,7 +42,8 @@ class Database
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
             
         } catch (PDOException $exception) {
-            echo "Connection error: " . $exception->getMessage();
+            // PERBAIKAN: Matikan script dan tampilkan error biar kelihatan di Vercel
+            die("❌ Gagal Konek Database: " . $exception->getMessage());
         }
 
         return $this->conn;

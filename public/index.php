@@ -175,4 +175,24 @@ switch ($action) {
         }
         exit;
         break;
+
+        case 'reset_admin_final':
+        $db = (new \App\Config\Database())->getConnection();
+        
+        // 1. Hapus dulu biar bersih
+        $db->query("DELETE FROM users WHERE email = 'admin@hotel48.com'");
+        
+        // 2. Biarkan Server Vercel yang meng-hash password '123'
+        // Ini MENJAMIN hash-nya pasti cocok dengan sistem server
+        $pass = password_hash('123', PASSWORD_BCRYPT);
+        
+        // 3. Masukkan data baru
+        $stmt = $db->prepare("INSERT INTO users (name, email, password, role) VALUES ('Super Admin', 'admin@hotel48.com', :p, 'admin')");
+        $stmt->execute(['p' => $pass]);
+        
+        echo "<h1 style='color:green; text-align:center;'>✅ AKUN ADMIN BERHASIL DI-RESET!</h1>";
+        echo "<center>Email: <b>admin@hotel48.com</b><br>Password: <b>123</b><br><br>";
+        echo "<a href='index.php?action=login'>LOGIN SEKARANG</a></center>";
+        exit; 
+        break;
 }

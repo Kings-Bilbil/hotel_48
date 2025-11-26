@@ -20,6 +20,8 @@ class DashboardController
 
     public function index()
     {
+        // Pastikan tidak ada echo di sini!
+        
         $role = $_SESSION['user_role'];
         $userName = $_SESSION['user_name'];
 
@@ -29,13 +31,6 @@ class DashboardController
             'role' => $role
         ];
 
-        // --- TAMBAHKAN KODE JEBAKAN INI ---
-        echo "<h1>TESTING: Masuk Controller Berhasil!</h1>";
-        echo "Role: " . $role . "<br>";
-        echo "Mencoba memanggil View...<br>";
-        // ----------------------------------
-
-        // Cek baris ini baik-baik huruf besar kecilnya
         require_once __DIR__ . '/../Views/dashboard/index.php';
     }
 }

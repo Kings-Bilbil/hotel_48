@@ -61,10 +61,6 @@ switch ($action) {
         break;
 
     case 'dashboard':
-        // --- DEBUGGING ---
-        echo "<h1>Router Berhasil: Masuk ke Dashboard Case</h1>";
-        // -----------------
-        
         $dashboard = new DashboardController();
         $dashboard->index();
         break;

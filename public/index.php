@@ -37,6 +37,11 @@ switch ($action) {
         $auth->loginProcess();
         break;
 
+    case 'admin_booking_delete':
+        $b = new BookingController();
+        $b->delete();
+        break;
+
     case 'logout':
         $auth = new AuthController();
         $auth->logout();

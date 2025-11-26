@@ -113,4 +113,13 @@ class Booking
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
+    public function delete($id)
+    {
+        // Karena ada Foreign Key Cascade di SQL awal kita, 
+        // menghapus booking otomatis menghapus data di tabel payments juga.
+        $query = "DELETE FROM bookings WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":id", $id);
+        return $stmt->execute();
+    }
 }

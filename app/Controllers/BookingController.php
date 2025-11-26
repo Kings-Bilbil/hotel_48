@@ -208,4 +208,23 @@ class BookingController
         // Kita buat file view baru nanti
         require_once __DIR__ . '/../Views/admin/bookings/index.php';
     }
+
+    public function delete()
+    {
+        // 1. Cek Login Admin (Wajib)
+        if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
+            header("Location: index.php?action=login");
+            exit();
+        }
+
+        // 2. Proses Hapus
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $this->booking->delete($id);
+        }
+
+        // 3. Balik ke Laporan
+        header("Location: index.php?action=admin_bookings");
+        exit();
+    }
 }

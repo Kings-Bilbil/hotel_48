@@ -41,7 +41,21 @@ switch ($action) {
         break;
 
     case 'login_process':
+        // --- DEBUGGING ---
+        echo "<h1>DEBUG START</h1>";
+        echo "1. Masuk case login_process...<br>";
+        
+        // Cek apakah class ada
+        if (class_exists('App\Controllers\AuthController')) {
+            echo "2. Class AuthController DITEMUKAN!<br>";
+        } else {
+            die("2. ERROR FATAL: Class AuthController TIDAK DITEMUKAN. Cek nama file di GitHub!");
+        }
+
         $auth = new AuthController();
+        echo "3. Object AuthController berhasil dibuat...<br>";
+        
+        echo "4. Memanggil method loginProcess()...<br>";
         $auth->loginProcess();
         break;
 

@@ -54,25 +54,26 @@ class User
 
     public function login($email, $password)
     {
-        try {
-            $query = "SELECT * FROM " . $this->table_name . " WHERE email = :email LIMIT 1";
-            $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(":email", $email);
-            $stmt->execute();
+        // Query cari user berdasarkan email
+        $query = "SELECT * FROM " . $this->table_name . " WHERE email = :email LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":email", $email);
+        $stmt->execute();
 
-            if ($stmt->rowCount() > 0) {
-                $row = $stmt->fetch();
-                if (password_verify($password, $row->password)) {
-                    $this->id = $row->id;
-                    $this->name = $row->name;
-                    $this->role = $row->role;
-                    return true;
-                }
+        // Jika user ditemukan
+        if ($stmt->rowCount() > 0) {
+            $row = $stmt->fetch();
+
+            // Cek Password (Hash vs Plaintext 123)
+            if (password_verify($password, $row->password)) {
+                // Isi data object
+                $this->id = $row->id;
+                $this->name = $row->name;
+                $this->role = $row->role;
+                return true; // Sukses
             }
-            return false;
-        } catch (\PDOException $e) {
-            // INI PENTING: Tampilkan error database ke layar
-            die("❌ Error Query SQL di User Model: " . $e->getMessage());
         }
+        
+        return false; // Gagal
     }
 }

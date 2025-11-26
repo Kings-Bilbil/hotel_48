@@ -28,10 +28,6 @@ class AuthController
     // Memproses Data Login dari Form
     public function loginProcess()
     {
-        // DEBUGGING MODE ON
-        echo "<h1>🔍 DEBUG LOGIN</h1>";
-        echo "1. Masuk ke loginProcess...<br>";
-
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
@@ -39,38 +35,22 @@ class AuthController
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
 
-        echo "2. Data diterima. Email: " . $email . "<br>";
-        echo "3. Mencoba memanggil Model User->login()...<br>";
+        // Panggil Model
+        if ($this->user->login($email, $password)) {
+            // Login Sukses -> Simpan Session
+            $_SESSION['user_id'] = $this->user->id;
+            $_SESSION['user_name'] = $this->user->name;
+            $_SESSION['user_role'] = $this->user->role;
 
-        try {
-            // Cek apakah object user sudah ada
-            if (!$this->user) {
-                die("❌ ERROR: Object User belum dibuat. Cek Constructor!");
-            }
-
-            // Panggil fungsi login di Model
-            $loginResult = $this->user->login($email, $password);
-            
-            echo "4. Hasil dari Model User: " . ($loginResult ? "TRUE (Ketemu)" : "FALSE (Gak Ketemu)") . "<br>";
-
-            if ($loginResult) {
-                echo "✅ Login Sukses! Menyimpan Session...<br>";
-                $_SESSION['user_id'] = $this->user->id;
-                $_SESSION['user_name'] = $this->user->name;
-                $_SESSION['user_role'] = $this->user->role;
-
-                echo "Redirecting ke Dashboard...";
-                header("Location: index.php?action=dashboard");
-                exit();
-            } else {
-                echo "⚠️ Login Gagal (Password Salah / Email tidak ada).<br>";
-                echo "<a href='index.php?action=login'>Coba Lagi</a>";
-            }
-
-        } catch (\Exception $e) {
-            die("❌ TERJADI ERROR FATAL: " . $e->getMessage());
-        } catch (\PDOException $e) {
-            die("❌ ERROR DATABASE: " . $e->getMessage());
+            // Redirect ke Dashboard
+            header("Location: index.php?action=dashboard");
+            exit();
+        } else {
+            // Login Gagal -> Kembali ke Login + Alert
+            echo "<script>
+                    alert('Login Gagal! Email atau Password Salah.');
+                    window.location.href='index.php?action=login';
+                  </script>";
         }
     }
 

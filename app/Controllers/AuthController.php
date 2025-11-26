@@ -66,4 +66,42 @@ class AuthController
         header("Location: index.php");
         exit();
     }
+
+    // Tampilkan Form Register
+    public function register()
+    {
+        require_once __DIR__ . '/../Views/auth/register.php';
+    }
+
+    // Proses Data Register
+    public function registerProcess()
+    {
+        if (session_status() == PHP_SESSION_NONE) session_start();
+
+        $name = $_POST['name'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+
+        // Validasi sederhana
+        if (empty($name) || empty($email) || empty($password)) {
+            echo "<script>alert('Semua kolom wajib diisi!'); window.history.back();</script>";
+            exit;
+        }
+
+        // Cek Email Kembar
+        if ($this->user->isEmailExists($email)) {
+            echo "<script>alert('Email sudah terdaftar! Silakan login.'); window.location.href='index.php?action=login';</script>";
+            exit;
+        }
+
+        // Simpan ke Database
+        if ($this->user->register($name, $email, $password)) {
+            echo "<script>
+                    alert('Registrasi Berhasil! Silakan Login.');
+                    window.location.href='index.php?action=login';
+                  </script>";
+        } else {
+            echo "<script>alert('Gagal mendaftar. Coba lagi.'); window.history.back();</script>";
+        }
+    }
 }

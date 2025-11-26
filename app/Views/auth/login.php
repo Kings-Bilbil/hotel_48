@@ -33,7 +33,10 @@
         
         <p style="text-align:center; font-size:12px; margin-top:15px;">
             <a href="index.php?action=booking">Cari Kamar Tanpa Login</a>
+        </p><p style="text-align:center; margin-top:15px;">
+        Belum punya akun? <a href="index.php?action=register">Daftar disini</a>
         </p>
+
     </div>
 
 </body>

@@ -50,6 +50,16 @@ switch ($action) {
         $auth->loginProcess();
         break;
 
+    case 'register':
+        $auth = new AuthController();
+        $auth->register();
+        break;
+
+    case 'register_process':
+        $auth = new AuthController();
+        $auth->registerProcess();
+        break;
+
     case 'login_google':
         $g = new GoogleAuthController();
         $g->login();

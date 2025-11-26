@@ -6,7 +6,6 @@ use PDO;
 
 class User
 {
-    // Encapsulation: Protected agar bisa diakses oleh class Customer/Admin
     protected $conn;
     protected $table_name = "users";
 
@@ -15,65 +14,70 @@ class User
     public $email;
     public $password;
     public $role;
+    public $google_id;
 
-    // Constructor: Otomatis jalan saat class dipanggil
     public function __construct($db)
     {
         $this->conn = $db;
     }
 
-    // Method Register (Bisa dipakai Admin maupun Customer)
-    public function register()
+    // 1. FUNGSI LOGIN
+    public function login($email, $password)
     {
-        // 1. Query SQL (Prepared Statement untuk keamanan)
+        try {
+            $query = "SELECT * FROM " . $this->table_name . " WHERE email = :email LIMIT 1";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":email", $email);
+            $stmt->execute();
+
+            if ($stmt->rowCount() > 0) {
+                $row = $stmt->fetch();
+                if (password_verify($password, $row->password)) {
+                    $this->id = $row->id;
+                    $this->name = $row->name;
+                    $this->role = $row->role;
+                    return true;
+                }
+            }
+            return false;
+        } catch (\PDOException $e) {
+            return false;
+        }
+    }
+
+    // 2. CEK EMAIL (Untuk Validasi Register)
+    public function isEmailExists($email)
+    {
+        $query = "SELECT id FROM " . $this->table_name . " WHERE email = :email LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":email", $email);
+        $stmt->execute();
+        
+        return $stmt->rowCount() > 0;
+    }
+
+    // 3. REGISTER USER BARU (Update: Menerima Parameter)
+    public function register($name, $email, $password)
+    {
         $query = "INSERT INTO " . $this->table_name . " 
-                  SET name=:name, email=:email, password=:password, role=:role";
+                  SET name=:name, email=:email, password=:password, role='customer'";
 
         $stmt = $this->conn->prepare($query);
 
-        // 2. Bersihkan input (Sanitasi dasar)
-        $this->name = htmlspecialchars(strip_tags($this->name));
-        $this->email = htmlspecialchars(strip_tags($this->email));
-        $this->role = htmlspecialchars(strip_tags($this->role));
+        // Sanitasi
+        $name = htmlspecialchars(strip_tags($name));
+        $email = htmlspecialchars(strip_tags($email));
+        
+        // Hash Password
+        $password_hash = password_hash($password, PASSWORD_BCRYPT);
 
-        // 3. Encapsulation Logic: Password WAJIB di-hash
-        $password_hash = password_hash($this->password, PASSWORD_BCRYPT);
-
-        // 4. Binding data (Mengisi placeholder :name dll)
-        $stmt->bindParam(":name", $this->name);
-        $stmt->bindParam(":email", $this->email);
+        $stmt->bindParam(":name", $name);
+        $stmt->bindParam(":email", $email);
         $stmt->bindParam(":password", $password_hash);
-        $stmt->bindParam(":role", $this->role);
 
-        // 5. Eksekusi
         if ($stmt->execute()) {
             return true;
         }
         return false;
-    }
-
-    public function login($email, $password)
-    {
-        // Query cari user berdasarkan email
-        $query = "SELECT * FROM " . $this->table_name . " WHERE email = :email LIMIT 1";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":email", $email);
-        $stmt->execute();
-
-        // Jika user ditemukan
-        if ($stmt->rowCount() > 0) {
-            $row = $stmt->fetch();
-
-            // Cek Password (Hash vs Plaintext 123)
-            if (password_verify($password, $row->password)) {
-                // Isi data object
-                $this->id = $row->id;
-                $this->name = $row->name;
-                $this->role = $row->role;
-                return true; // Sukses
-            }
-        }
-        
-        return false; // Gagal
     }
 }

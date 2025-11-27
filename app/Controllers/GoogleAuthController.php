@@ -16,10 +16,14 @@ class GoogleAuthController
         $this->client = new Client();
         
         // --- KONFIGURASI GOOGLE ---
-        // Masukkan Client ID & Secret punya kamu di sini
-        $this->client->setClientId($_ENV['GOOGLE_CLIENT_ID']); 
-        $this->client->setClientSecret($_ENV['GOOGLE_CLIENT_SECRET']);
-        $this->client->setRedirectUri($_ENV['GOOGLE_REDIRECT_URI']);
+        // Ambil dari Environment Variable (Settingan Vercel / .env)
+        $clientId = getenv('GOOGLE_CLIENT_ID') ?: $_ENV['GOOGLE_CLIENT_ID'];
+        $clientSecret = getenv('GOOGLE_CLIENT_SECRET') ?: $_ENV['GOOGLE_CLIENT_SECRET'];
+        $redirectUri = getenv('GOOGLE_REDIRECT_URI') ?: $_ENV['GOOGLE_REDIRECT_URI'];
+
+        $this->client->setClientId($clientId); 
+        $this->client->setClientSecret($clientSecret);
+        $this->client->setRedirectUri($redirectUri);
         
         $this->client->addScope("email");
         $this->client->addScope("profile");
@@ -38,21 +42,15 @@ class GoogleAuthController
     public function callback()
     {
         if (isset($_GET['code'])) {
-            // Tukar kode dengan token akses
             $token = $this->client->fetchAccessTokenWithAuthCode($_GET['code']);
             
-            // Cek jika ada error
             if(isset($token['error'])){
-                // Debugging: uncomment baris bawah ini kalau mau lihat errornya apa
-                // die("Error Token: " . print_r($token, true));
                 header("Location: index.php?action=login");
                 exit;
             }
 
-            // PERBAIKAN 2: Set Token ke client
             $this->client->setAccessToken($token);
 
-            // Ambil data profil dari Google
             $google_oauth = new Oauth2($this->client);
             $google_account_info = $google_oauth->userinfo->get();
             
@@ -60,11 +58,9 @@ class GoogleAuthController
             $name = $google_account_info->name;
             $google_id = $google_account_info->id;
 
-            // Proses Login/Register di Database kita
             $this->handleUser($name, $email, $google_id);
 
         } else {
-             // Kalau user membatalkan login / tidak ada code
              header("Location: index.php?action=login");
         }
     }
@@ -95,13 +91,11 @@ class GoogleAuthController
             $role = 'customer';
         }
 
-        // Set Session
         if (session_status() == PHP_SESSION_NONE) session_start();
         $_SESSION['user_id'] = $userId;
         $_SESSION['user_name'] = $name;
         $_SESSION['user_role'] = $role;
 
-        // Redirect ke Dashboard
         header("Location: index.php?action=dashboard");
         exit();
     }

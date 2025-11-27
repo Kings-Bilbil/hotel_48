@@ -14,28 +14,44 @@ class BookingController
 
     public function __construct()
     {
-        // Mulai session jika belum dimulai
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
-
-        // CATATAN: Kita HAPUS pengecekan login di sini agar Tamu bisa masuk
         
         $database = new Database();
         $this->db = $database->getConnection();
         $this->booking = new Booking($this->db);
     }
 
-    // 1. Tampilkan Halaman Cari (Bisa Diakses Siapa Saja)
+    // 1. Tampilkan Halaman Cari
     public function index()
     {
-        $data = ['title' => 'Cari Kamar'];
+        if (!isset($_SESSION['user_id'])) {
+            // TWEAK: Kirim pesan 'auth_required'
+            header("Location: index.php?action=login&msg=auth_required");
+            exit();
+        }
+
+        $checkIn = $_GET['check_in'] ?? '';
+        $checkOut = $_GET['check_out'] ?? '';
+
+        $data = [
+            'title' => 'Cari Kamar',
+            'check_in' => $checkIn,
+            'check_out' => $checkOut
+        ];
+        
         require_once __DIR__ . '/../Views/customer/search.php';
     }
 
-    // 2. Proses Cari Kamar (Bisa Diakses Siapa Saja)
+    // 2. Proses Cari Kamar
     public function search()
     {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=login&msg=auth_required");
+            exit();
+        }
+
         $checkIn = $_GET['check_in'] ?? '';
         $checkOut = $_GET['check_out'] ?? '';
 
@@ -54,12 +70,11 @@ class BookingController
         }
     }
 
-    // 3. Proses Booking (WAJIB LOGIN)
+    // 3. Proses Booking
     public function book()
     {
-        // Cek Login
         if (!isset($_SESSION['user_id'])) {
-            header("Location: index.php?action=login");
+            header("Location: index.php?action=login&msg=auth_required");
             exit();
         }
 
@@ -69,12 +84,11 @@ class BookingController
             $checkIn = $_POST['check_in'];
             $checkOut = $_POST['check_out'];
 
-            // Hitung durasi malam
             $d1 = new \DateTime($checkIn);
             $d2 = new \DateTime($checkOut);
             $interval = $d1->diff($d2);
             $days = $interval->days;
-            if ($days < 1) $days = 1; // Minimal 1 malam
+            if ($days < 1) $days = 1;
 
             $this->booking->user_id = $_SESSION['user_id'];
             $this->booking->room_id = $roomId;
@@ -82,11 +96,8 @@ class BookingController
             $this->booking->check_out = $checkOut;
             $this->booking->total_price = $price * $days;
 
-            // SIMPAN BOOKING -> DAPATKAN ID BARU
             if ($this->booking->create()) {
                 $newBookingId = $this->booking->id;
-                
-                // ARAHKAN KE HALAMAN BAYAR
                 header("Location: index.php?action=payment&booking_id=" . $newBookingId);
                 exit();
             } else {
@@ -95,7 +106,7 @@ class BookingController
         }
     }
 
-    // 4. Lihat Pesanan Saya (WAJIB LOGIN)
+    // 4. Lihat Pesanan Saya
     public function history()
     {
         if (!isset($_SESSION['user_id'])) {
@@ -110,7 +121,6 @@ class BookingController
 
     public function downloadInvoice()
     {
-        // Cek Login
         if (!isset($_SESSION['user_id'])) {
             header("Location: index.php?action=login");
             exit();
@@ -119,16 +129,12 @@ class BookingController
         $id = $_GET['id'] ?? null;
         if (!$id) die("ID Booking tidak ditemukan.");
 
-        // Ambil data booking
         $booking = $this->booking->getDetailById($id);
 
-        // PROTEKSI: Pastikan yang download adalah pemilik booking itu sendiri
         if ($booking->user_id != $_SESSION['user_id']) {
             die("Anda tidak berhak mengakses invoice ini.");
         }
 
-        // DESAIN TAMPILAN PDF (HTML)
-        // Kita tulis HTML-nya langsung di sini biar praktis
         $html = '
         <html>
         <head>
@@ -181,7 +187,6 @@ class BookingController
         </body>
         </html>';
 
-        // PROSES DOMPDF
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
         
@@ -189,14 +194,11 @@ class BookingController
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-
-        // Download file dengan nama unik
         $dompdf->stream("invoice_hotel48_" . $id . ".pdf", ["Attachment" => true]);
     }
 
     public function adminList()
     {
-        // Cek Login Admin
         if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
             header("Location: index.php?action=login");
             exit();
@@ -204,26 +206,19 @@ class BookingController
 
         $bookings = $this->booking->getAllForAdmin();
         $data = ['title' => 'Laporan Semua Pesanan', 'bookings' => $bookings];
-        
-        // Kita buat file view baru nanti
         require_once __DIR__ . '/../Views/admin/bookings/index.php';
     }
 
     public function delete()
     {
-        // 1. Cek Login Admin (Wajib)
         if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
             header("Location: index.php?action=login");
             exit();
         }
-
-        // 2. Proses Hapus
         $id = $_GET['id'] ?? null;
         if ($id) {
             $this->booking->delete($id);
         }
-
-        // 3. Balik ke Laporan
         header("Location: index.php?action=admin_bookings");
         exit();
     }

@@ -17,13 +17,11 @@ class PaymentController
         $this->db = $database->getConnection();
     }
 
-    // 1. Tampilkan Halaman Pilih Metode
     public function index()
     {
         $bookingId = $_GET['booking_id'] ?? null;
         if (!$bookingId) { header("Location: index.php"); exit; }
         
-        // Ambil total harga dari DB (Query Cepat)
         $stmt = $this->db->prepare("SELECT total_price FROM bookings WHERE id = :id");
         $stmt->execute(['id' => $bookingId]);
         $booking = $stmt->fetch();
@@ -37,7 +35,6 @@ class PaymentController
         require_once __DIR__ . '/../Views/customer/payment.php';
     }
 
-    // 2. Proses Bayar (Polymorphism Beraksi!)
     public function process()
     {
         $method = $_POST['method'];
@@ -46,7 +43,6 @@ class PaymentController
 
         $paymentGateway = null;
 
-        // Pilih Class berdasarkan input user
         switch ($method) {
             case 'DANA':
                 $paymentGateway = new DanaPayment();
@@ -58,23 +54,18 @@ class PaymentController
                 die("Metode pembayaran tidak dikenal.");
         }
 
-        // EKSEKUSI (Apapun metodenya, perintahnya sama: PAY)
         $result = $paymentGateway->pay($amount);
 
         if ($result['success']) {
-            // Update Status Booking jadi 'confirmed'
             $this->updateStatus($bookingId, 'confirmed');
 
-            // Simpan log pembayaran (Opsional, query cepat)
             $sql = "INSERT INTO payments (booking_id, amount, provider) VALUES (:bid, :amt, :prov)";
             $stmt = $this->db->prepare($sql);
             $stmt->execute(['bid' => $bookingId, 'amt' => $amount, 'prov' => $result['provider']]);
 
-            // Redirect ke History dengan pesan sukses
-            echo "<script>
-                    alert('" . $result['message'] . "');
-                    window.location.href='index.php?action=my_bookings';
-                  </script>";
+            // TWEAK: Redirect Bersih dengan Parameter Sukses
+            header("Location: index.php?action=my_bookings&status=payment_success");
+            exit();
         }
     }
 

@@ -26,6 +26,12 @@ class BookingController
     // 1. Tampilkan Halaman Cari
     public function index()
     {
+        // Proteksi: Admin tidak boleh masuk sini
+        if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') {
+            echo "<script>alert('Selamat datang admin! Anda akan di arahkan ke dashboard.'); window.location.href='index.php?action=dashboard';</script>";
+            exit();
+        }
+
         if (!isset($_SESSION['user_id'])) {
             // TWEAK: Kirim pesan 'auth_required'
             header("Location: index.php?action=login&msg=auth_required");
@@ -47,6 +53,11 @@ class BookingController
     // 2. Proses Cari Kamar
     public function search()
     {
+        if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') {
+            header("Location: index.php?action=dashboard");
+            exit();
+        }
+
         if (!isset($_SESSION['user_id'])) {
             header("Location: index.php?action=login&msg=auth_required");
             exit();
@@ -73,8 +84,9 @@ class BookingController
     // 3. Proses Booking
     public function book()
     {
-        if (!isset($_SESSION['user_id'])) {
-            header("Location: index.php?action=login&msg=auth_required");
+        // Proteksi Admin
+        if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') {
+            echo "<script>alert('Admin tidak bisa melakukan booking!'); window.location.href='index.php?action=dashboard';</script>";
             exit();
         }
 

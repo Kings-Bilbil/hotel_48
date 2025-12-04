@@ -104,8 +104,24 @@ class RoomController
     {
         $id = $_GET['id'] ?? null;
         if ($id) {
-            $this->roomType->delete($id);
+            try {
+                $this->roomType->delete($id);
+                header("Location: index.php?action=rooms");
+            } catch (\PDOException $e) {
+                // Cek kode error 1451 (Integrity constraint violation)
+                if ($e->getCode() == '23000') {
+                    echo "<script>
+                        alert('GAGAL MENGHAPUS: Tipe kamar ini tidak bisa dihapus karena masih memiliki Unit Kamar atau Riwayat Pesanan yang terkait. Silakan hapus unit/pesanannya terlebih dahulu.');
+                        window.location.href='index.php?action=rooms';
+                    </script>";
+                } else {
+                    // Kalau error lain, tampilkan
+                    echo "Error: " . $e->getMessage();
+                }
+            }
+        } else {
+            header("Location: index.php?action=rooms");
         }
-        header("Location: index.php?action=rooms");
+        exit();
     }
 }

@@ -63,8 +63,26 @@ class UnitController      // <--- Nama Class harus UnitController
     public function delete()
     {
         $id = $_GET['id'] ?? null;
-        if ($id) $this->unit->delete($id);
-        header("Location: index.php?action=units");
+        if ($id) {
+            try {
+                $this->unit->delete($id);
+                header("Location: index.php?action=units");
+            } catch (\PDOException $e) {
+                // Cek kode error 23000 (Integrity constraint violation)
+                if ($e->getCode() == '23000') {
+                    echo "<script>
+                        alert('GAGAL MENGHAPUS: Unit kamar ini tidak bisa dihapus karena masih tercatat dalam riwayat pesanan (Booking). Silakan hapus data pesanannya terlebih dahulu di menu Laporan.');
+                        window.location.href='index.php?action=units';
+                    </script>";
+                } else {
+                    // Error lain
+                    echo "Error: " . $e->getMessage();
+                }
+            }
+        } else {
+            header("Location: index.php?action=units");
+        }
+        exit();
     }
 
     public function toggle()
